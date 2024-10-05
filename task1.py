@@ -1,7 +1,21 @@
 def negative_checker(arr: list[float]) -> bool:
     return any(el < 0 for el in arr)
 
-def simplex_func(arr: list[list[float]], t: str) -> dict:
+def simplex_func(a: list[int], c: list[int], b: list[int], t: str) -> dict:
+
+    for i in range(len(a)):
+        for j in range(len(a)):
+            if i == j:
+                a[i].append(1)
+            else:
+                a[i].append(0)
+        a[i].append(b[i])
+
+    c += [0] * (len(a) + 1)
+    a.insert(0, c)
+
+    arr: list[list[float]] = [[float(element) for element in row] for row in a]
+
     if t == "max":
         arr[0] = [-x for x in arr[0]]
 
@@ -54,18 +68,7 @@ def main():
     a  = eval(input())
     b = eval(input())
 
-    for i in range(len(a)):
-        for j in range(len(a)):
-            if i == j:
-                a[i].append(1)
-            else:
-                a[i].append(0)
-        a[i].append(b[i])
-
-    c += [0] * (len(a) + 1)
-    a.insert(0, c)
-
-    solution = simplex_func([[float(element) for element in row] for row in a], t)
+    solution = simplex_func(a, c, b, t)
 
     print(solution["solver_state"])
     if solution["solver_state"] == "solved":
