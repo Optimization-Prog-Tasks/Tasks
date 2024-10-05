@@ -1,47 +1,34 @@
-def negative_checker(arr) -> bool:
-    for el in arr:
-        if el < 0:
-            return True
-    return False
+def negative_checker(arr: list[float]) -> bool:
+    return any(el < 0 for el in arr)
 
-def simplex_func(arr: list[list], t: str) -> dict:
-    global indexCol, indexRow
-    if t.strip() == "max":
-        for i in range(len(arr[0])):
-            arr[0][i] *= -1
+def simplex_func(arr: list[list[float]], t: str) -> dict:
+    if t == "max":
+        arr[0] = [-x for x in arr[0]]
 
-    x_sol = [0] * (len(arr) - 1)
-    x_vector = [0.0] * (len(arr) - 1)
+    num_var = len(arr) - 1
+    x_sol: list[int] = [0] * num_var
+    x_vector: list[float] = [0] * num_var
+
     while negative_checker(arr[0]):
-        min_num: float = 1000
-        indexRow: int
-        indexCol: int
-        min_sol: float = 1000
-        div_num: float
+        indexRow: int = arr[0].index(min(arr[0]))
+        indexCol: int = -1
+        min_rat: float = float('inf')
 
-        for i in range(len(arr[0])):
-            if arr[0][i] < min_num:
-                min_num = arr[0][i]
-                indexRow = i
-
-        unbounded = True
         for i in range(1, len(arr)):
             if arr[i][indexRow] > 0:
                 ratio = arr[i][-1] / arr[i][indexRow]
-                if 0 <= ratio < min_sol:
-                    min_sol = ratio
+                if ratio < min_rat:
+                    min_rat = ratio
                     indexCol = i
-                    unbounded = False
 
-        if unbounded:
+        if indexCol == -1:
             return {"solver_state": "unbounded"}
 
         x_sol[indexCol - 1] = indexRow + 1
-
-        div_num = arr[indexCol][indexRow]
+        pivot: float = arr[indexCol][indexRow]
 
         for i in range(len(arr[indexCol])):
-            arr[indexCol][i] /= div_num
+            arr[indexCol][i] /= pivot
 
         for i in range(len(arr)):
             if i != indexCol:
@@ -62,13 +49,10 @@ def simplex_func(arr: list[list], t: str) -> dict:
 
 
 def main():
-    t: str = input()
+    t: str = input().strip()
     c = eval(input())
     a  = eval(input())
     b = eval(input())
-
-    for i in range(len(c) + 1):
-        c.append(0)
 
     for i in range(len(a)):
         for j in range(len(a)):
@@ -78,6 +62,7 @@ def main():
                 a[i].append(0)
         a[i].append(b[i])
 
+    c += [0] * (len(a) + 1)
     a.insert(0, c)
 
     solution = simplex_func([[float(element) for element in row] for row in a], t)
