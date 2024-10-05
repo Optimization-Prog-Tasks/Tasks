@@ -4,7 +4,8 @@ def negative_checker(arr) -> bool:
             return True
     return False
 
-def simplex_func(arr: list[list], t: str):
+def simplex_func(arr: list[list], t: str) -> dict:
+    global indexCol, indexRow
     if t.strip() == "max":
         for i in range(len(arr[0])):
             arr[0][i] *= -1
@@ -13,28 +14,27 @@ def simplex_func(arr: list[list], t: str):
     x_vector = [0.0] * (len(arr) - 1)
     while negative_checker(arr[0]):
         min_num: float = 1000
-        indexRow: float
-        indexCol: float
+        indexRow: int
+        indexCol: int
         min_sol: float = 1000
         div_num: float
-        count = 0
 
         for i in range(len(arr[0])):
             if arr[0][i] < min_num:
                 min_num = arr[0][i]
                 indexRow = i
 
-        for i in range(len(arr)):
-            if min_sol > arr[i][-1] / arr[i][indexRow] > 0:
-                min_sol = arr[i][-1] / arr[i][indexRow]
-                indexCol = i
-                count = 1
-            elif min_sol == arr[i][-1] / arr[i][indexRow]:
-                count += 1
+        unbounded = True
+        for i in range(1, len(arr)):
+            if arr[i][indexRow] > 0:
+                ratio = arr[i][-1] / arr[i][indexRow]
+                if 0 <= ratio < min_sol:
+                    min_sol = ratio
+                    indexCol = i
+                    unbounded = False
 
-        if count == 2 or min_sol == 1000:
-            print("The method is not applicable!")
-            exit(1)
+        if unbounded:
+            return {"solver_state": "unbounded"}
 
         x_sol[indexCol - 1] = indexRow + 1
 
@@ -54,8 +54,11 @@ def simplex_func(arr: list[list], t: str):
             if i + 1 == x_sol[j]:
                 x_vector[i] = arr[j + 1][-1]
 
-    print("A vector of decision variables:", x_vector)
-    print(f"{t} value of the objective function:", arr[0][-1])
+    return {
+        "solver_state": "solved",
+        "vector": x_vector,
+        "solution": arr[0][-1]
+    }
 
 
 def main():
@@ -77,7 +80,12 @@ def main():
 
     a.insert(0, c)
 
-    simplex_func([[float(element) for element in row] for row in a], t)
+    solution = simplex_func([[float(element) for element in row] for row in a], t)
+
+    print(solution["solver_state"])
+    if solution["solver_state"] == "solved":
+        print("A vector of decision variables:", solution["vector"])
+        print(f"{t} value of the objective function:", solution["solution"])
 
 if __name__ == '__main__':
     main()
