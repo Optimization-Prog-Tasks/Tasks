@@ -1,7 +1,7 @@
-def negative_checker(arr: list[float]) -> bool:
-    return any(el < 0 for el in arr)
+def negative_checker(arr: list[float], eps: float) -> bool:
+    return any(el < -eps for el in arr)
 
-def simplex_func(a: list[int], c: list[int], b: list[int], t: str) -> dict:
+def simplex_func(a: list[list[int]], c: list[int], b: list[int], t: str, eps: float) -> dict:
 
     for i in range(len(a)):
         for j in range(len(a)):
@@ -23,13 +23,13 @@ def simplex_func(a: list[int], c: list[int], b: list[int], t: str) -> dict:
     x_sol: list[int] = [0] * num_var
     x_vector: list[float] = [0] * num_var
 
-    while negative_checker(arr[0]):
+    while negative_checker(arr[0], eps):
         indexRow: int = arr[0].index(min(arr[0]))
         indexCol: int = -1
         min_rat: float = float('inf')
 
         for i in range(1, len(arr)):
-            if arr[i][indexRow] > 0:
+            if arr[i][indexRow] > eps:
                 ratio = arr[i][-1] / arr[i][indexRow]
                 if ratio < min_rat:
                     min_rat = ratio
@@ -61,19 +61,54 @@ def simplex_func(a: list[int], c: list[int], b: list[int], t: str) -> dict:
         "solution": arr[0][-1]
     }
 
-
 def main():
-    t: str = input().strip()
-    c = eval(input())
-    a  = eval(input())
-    b = eval(input())
+    eps =  1e-7
+    tests = [
+        [
+            "max",
+            [3, 5],
+            [[1, 2], [3, 2]],
+            [6, 12],
+        ],
 
-    solution = simplex_func(a, c, b, t)
+        [
+            "max",
+            [4, 3],
+            [[2, 1], [1, 3]],
+            [8, 9],
+        ],
 
-    print(solution["solver_state"])
-    if solution["solver_state"] == "solved":
-        print("A vector of decision variables:", solution["vector"])
-        print(f"{t} value of the objective function:", solution["solution"])
+        [
+            "max",
+            [9, 10, 16],
+            [[18, 15, 12], [6, 4, 8], [5, 3, 3]],
+            [360, 192, 180],
+        ],
+
+        [
+            "max",
+            [3, 9],
+            [[1, 4], [1, 2]],
+            [8, 4],
+        ],
+
+        [
+            "max",
+            [2, 3],
+            [[1, -1]],
+            [4],
+
+        ]
+    ]
+
+    for el in tests:
+        solution = simplex_func(el[2], el[1], el[3], el[0], eps)
+
+        print(solution["solver_state"])
+        if solution["solver_state"] == "solved":
+            print("A vector of decision variables:", solution["vector"])
+            print(f"{el[0]} value of the objective function:", solution["solution"])
+        print("-" * 50)
 
 if __name__ == '__main__':
     main()
